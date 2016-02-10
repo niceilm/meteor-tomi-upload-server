@@ -29,23 +29,23 @@ var options = {
   imageVersions: {
     thumbnail: {
       width: 200,
-      height: 200,
-    },
+      height: 200
+    }
   },
   overwrite: false,
   cacheTime: 86400,
-  getDirectory: function (fileInfo, formData) {
+  getDirectory: function(fileInfo, formData) {
     return ""
   },
-  getFileName: function (fileInfo, formData) {
+  getFileName: function(fileInfo, formData) {
     return fileInfo.name;
   },
-  finished: function () {
+  finished: function() {
   },
-  validateRequest: function () {
+  validateRequest: function() {
     return null;
   },
-  validateFile: function () {
+  validateFile: function() {
     return null;
   },
   accessControl: {
@@ -77,78 +77,83 @@ var options = {
 
 
 UploadServer = {
-  getOptions: function()
-  {
+  getOptions: function() {
     return options;
   },
-  init: function (opts) {
-    if (opts.checkCreateDirectories != null) options.checkCreateDirectories = opts.checkCreateDirectories;
+  init: function(opts) {
+    if(opts.checkCreateDirectories != null) options.checkCreateDirectories = opts.checkCreateDirectories;
 
-    if (opts.tmpDir == null) {
+    if(opts.tmpDir == null) {
       throw new Meteor.Error('Temporary directory needs to be assigned!');
     } else {
       options.tmpDir = opts.tmpDir;
     }
 
-    if (opts.cacheTime != null) {
+    if(opts.cacheTime != null) {
       options.cacheTime = opts.cacheTime;
     }
 
-    if (opts.mimeTypes != null) {
-      for (var key in opts.mimeTypes) {
+    if(opts.mimeTypes != null) {
+      for(var key in opts.mimeTypes) {
         options.mimeTypes[key] = opts.mimeTypes[key];
       }
     }
 
-    if (opts.checkCreateDirectories) {
+    if(opts.checkCreateDirectories) {
       checkCreateDirectory(options.tmpDir);
     }
 
-    if (opts.uploadDir == null) {
+    if(opts.uploadDir == null) {
       throw new Meteor.Error('Upload directory needs to be assigned!');
     } else {
       options.uploadDir = opts.uploadDir;
     }
 
-    if (opts.uploadUrl) {
+    if(opts.uploadUrl) {
       options.uploadUrl = opts.uploadUrl;
     }
 
-    if (options.checkCreateDirectories) {
+    if(options.checkCreateDirectories) {
       checkCreateDirectory(options.uploadDir);
     }
 
-    if (opts.maxPostSize != null) options.maxPostSize = opts.maxPostSize;
-    if (opts.minFileSize != null) options.minFileSize = opts.minFileSize;
-    if (opts.maxFileSize != null) options.maxFileSize = opts.maxFileSize;
-    if (opts.acceptFileTypes != null) options.acceptFileTypes = opts.acceptFileTypes;
-    if (opts.imageTypes != null) options.imageTypes = opts.imageTypes;
-    if (opts.validateRequest != null) options.validateRequest = opts.validateRequest;
-    if (opts.validateFile != null) options.validateFile = opts.validateFile;
-    if (opts.getDirectory != null) options.getDirectory = opts.getDirectory;
-    if (opts.getFileName != null) options.getFileName = opts.getFileName;
-    if (opts.finished != null) options.finished = opts.finished;
-    if (opts.overwrite != null) options.overwrite = opts.overwrite;
+    if(opts.maxPostSize != null) options.maxPostSize = opts.maxPostSize;
+    if(opts.minFileSize != null) options.minFileSize = opts.minFileSize;
+    if(opts.maxFileSize != null) options.maxFileSize = opts.maxFileSize;
+    if(opts.acceptFileTypes != null) options.acceptFileTypes = opts.acceptFileTypes;
+    if(opts.imageTypes != null) options.imageTypes = opts.imageTypes;
+    if(opts.validateRequest != null) options.validateRequest = opts.validateRequest;
+    if(opts.validateFile != null) options.validateFile = opts.validateFile;
+    if(opts.getDirectory != null) options.getDirectory = opts.getDirectory;
+    if(opts.getFileName != null) options.getFileName = opts.getFileName;
+    if(opts.finished != null) options.finished = opts.finished;
+    if(opts.overwrite != null) options.overwrite = opts.overwrite;
+    if(opts.ssl != null) options.ssl = opts.ssl;
+    if(opts.accessControl != null) options.accessControl = opts.accessControl;
 
-    if (opts.uploadUrl) options.uploadUrl = opts.uploadUrl;
+    if(opts.uploadUrl) options.uploadUrl = opts.uploadUrl;
 
-    if (opts.imageVersions != null) options.imageVersions = opts.imageVersions
+    if(opts.imageVersions != null) options.imageVersions = opts.imageVersions;
     else options.imageVersions = [];
 
-    if (options.uploadUrl != "/upload/") {
+    if(options.uploadUrl != "/upload/") {
       console.log("Custom upload url setup to: " + options.uploadUrl);
     }
 
     RoutePolicy.declare(options.uploadUrl, 'network');
     WebApp.connectHandlers.use(options.uploadUrl, UploadServer.serve);
   },
-  delete: function (filePath) {
+  delete: function(filePath) {
 
     // make sure paths are correct
     fs.unlinkSync(path.join(options.uploadDir, filePath));
   },
-  serve: function (req, res) {
-    if (options.tmpDir == null || options.uploadDir == null) {
+  remove: function(filePath) {
+    // make sure paths are correct
+    fs.unlinkSync(path.join(options.uploadDir, filePath));
+  },
+  serve: function(req, res) {
+    if(options.tmpDir == null || options.uploadDir == null) {
       throw new Meteor.Error('Upload component not initialised!');
     }
 
@@ -164,8 +169,8 @@ UploadServer = {
       'Access-Control-Allow-Headers',
       options.accessControl.allowHeaders
     );
-    var handleResult = function (result, redirect) {
-        if (redirect) {
+    var handleResult = function(result, redirect) {
+        if(redirect) {
           res.writeHead(302, {
             'Location': redirect.replace(
               /%s/,
@@ -173,7 +178,7 @@ UploadServer = {
             )
           });
           res.end();
-        } else if (result.error) {
+        } else if(result.error) {
           res.writeHead(403, {'Content-Type': 'text/plain'});
           res.write(result.error);
           res.end();
@@ -186,8 +191,8 @@ UploadServer = {
           res.end(JSON.stringify(result));
         }
       },
-      setNoCacheHeaders = function () {
-        if (options.cacheTime) {
+      setNoCacheHeaders = function() {
+        if(options.cacheTime) {
           res.setHeader('Cache-Control', 'public, max-age=' + options.cacheTime);
         } else {
           res.setHeader('Pragma', 'no-cache');
@@ -200,14 +205,14 @@ UploadServer = {
 
     // validate the request
     var error = options.validateRequest(req, res);
-    if (error == false || (error != true && error != null)) {
+    if(error == false || (error != true && error != null)) {
       res.writeHead(403, {'Content-Type': 'text/plain'});
       res.write(error.toString());
       res.end();
       return;
     }
 
-    switch (req.method) {
+    switch(req.method) {
       case 'OPTIONS':
         res.end();
         break;
@@ -221,17 +226,17 @@ UploadServer = {
 
         try {
           stats = fs.lstatSync(filename); // throws if path doesn't exist
-        } catch (e) {
+        } catch(e) {
           res.writeHead(404, {'Content-Type': 'text/plain'});
           res.write('404 Not Found\n');
           res.end();
           return;
         }
 
-        if (stats.isFile()) {
+        if(stats.isFile()) {
           // path exists, is a file
           var mimeType = options.mimeTypes[path.extname(filename).split(".").reverse()[0]];
-          if (!mimeType) {
+          if(!mimeType) {
             mimeType = "application/octet-stream";
           }
           res.writeHead(200, {'Content-Type': mimeType});
@@ -240,7 +245,7 @@ UploadServer = {
           var fileStream = fs.createReadStream(filename);
           fileStream.pipe(res);
 
-        } else if (stats.isDirectory()) {
+        } else if(stats.isDirectory()) {
           // path exists, is a directory
           res.writeHead(403, {'Content-Type': 'text/plain'});
           res.write('Access denied');
@@ -266,37 +271,37 @@ UploadServer = {
   }
 }
 
-var utf8encode = function (str) {
+var utf8encode = function(str) {
   return unescape(encodeURIComponent(str));
 };
 
 var nameCountRegexp = /(?:(?: \(([\d]+)\))?(\.[^.]+))?$/;
 
-var nameCountFunc = function (s, index, ext) {
+var nameCountFunc = function(s, index, ext) {
   return ' (' + ((parseInt(index, 10) || 0) + 1) + ')' + (ext || '');
 };
 
 /**
  * @class FileInfo Manages paths for uploaded objects
  */
-var FileInfo = function (file, req, form) {
+var FileInfo = function(file, req, form) {
   this.name = file.name;
   this.path = file.name;
   this.size = file.size;
   this.type = file.type;
 
-  this.subDirectory = options.getDirectory(this, form.formFields);
+  this.subDirectory = options.getDirectory(this, form.formFields, req);
   this.baseUrl = (options.ssl ? 'https:' : 'http:') + '//' + req.headers.host + options.uploadUrl;
   this.url = this.baseUrl + (this.subDirectory ? (this.subDirectory + '/') : '') + encodeURIComponent(this.name);
 };
 
-FileInfo.prototype.validate = function () {
+FileInfo.prototype.validate = function() {
   this.error = null;
-  if (options.minFileSize && options.minFileSize > this.size) {
+  if(options.minFileSize && options.minFileSize > this.size) {
     this.error = 'File is too small';
-  } else if (options.maxFileSize && options.maxFileSize < this.size) {
+  } else if(options.maxFileSize && options.maxFileSize < this.size) {
     this.error = 'File is too big';
-  } else if (!options.acceptFileTypes.test(this.name)) {
+  } else if(!options.acceptFileTypes.test(this.name)) {
     this.error = 'Filetype not allowed';
   }
   return this.error;
@@ -311,28 +316,28 @@ FileInfo.prototype.validate = function () {
 //   }
 // };
 
-FileInfo.prototype.initUrls = function (req, form) {
-  if (!this.error) {
+FileInfo.prototype.initUrls = function(req, form) {
+  if(!this.error) {
     // image
     var that = this;
-    Object.keys(options.imageVersions).forEach(function (version) {
-      if (_existsSync(
+    Object.keys(options.imageVersions).forEach(function(version) {
+      if(_existsSync(
           options.uploadDir + '/' + version + '/' + that.name
         )) {
         that[version + 'Url'] = that.baseUrl + version + '/' +
-        encodeURIComponent(that.name);
+          encodeURIComponent(that.name);
       }
     });
   }
 };
 
-var UploadHandler = function (req, res, callback) {
+var UploadHandler = function(req, res, callback) {
   this.req = req;
   this.res = res;
   this.callback = callback;
 };
 
-UploadHandler.prototype.post = function () {
+UploadHandler.prototype.post = function() {
   var handler = this,
     form = new formidable.IncomingForm(),
     tmpFiles = [],
@@ -340,40 +345,40 @@ UploadHandler.prototype.post = function () {
     map = {},
     counter = 1,
     redirect,
-    finish = function () {
+    finish = function() {
       counter -= 1;
-      if (!counter) {
-        files.forEach(function (fileInfo) {
+      if(!counter) {
+        files.forEach(function(fileInfo) {
           fileInfo.initUrls(handler.req, form);
         });
         handler.callback({files: files}, redirect);
       }
     };
   form.uploadDir = options.tmpDir;
-  form.on('fileBegin', function (name, file) {
+  form.on('fileBegin', function(name, file) {
     tmpFiles.push(file.path);
     var fileInfo = new FileInfo(file, handler.req, form);
     //fileInfo.safeName();
 
     map[path.basename(file.path)] = fileInfo;
     files.push(fileInfo);
-  }).on('field', function (name, value) {
-    if (name === 'redirect') {
+  }).on('field', function(name, value) {
+    if(name === 'redirect') {
       redirect = value;
     }
     // remember all the form fields
-    if (this.formFields == null) {
+    if(this.formFields == null) {
       this.formFields = {};
     }
     //  console.log('Form field: ' + name + "-" + value);
     this.formFields[name] = value;
-  }).on('file', function (name, file) {
+  }).on('file', function(name, file) {
     var fileInfo = map[path.basename(file.path)];
     fileInfo.size = file.size;
 
     // custom validation
     var error = options.validateFile(file, handler.req);
-    if (error == false || (error != true && error != null)) {
+    if(error == false || (error != true && error != null)) {
       handler.res.writeHead(403, {'Content-Type': 'text/plain'});
       handler.res.write(error == false ? "validationFailed" : error);
       handler.res.end();
@@ -383,7 +388,7 @@ UploadHandler.prototype.post = function () {
 
     // fileinfo validation
     error = fileInfo.validate();
-    if (error) {
+    if(error) {
       // delete file
       fs.unlinkSync(file.path);
       // callback with error
@@ -392,7 +397,7 @@ UploadHandler.prototype.post = function () {
     }
 
     // we can store files in subdirectories
-    var folder = options.getDirectory(fileInfo, this.formFields);
+    var folder = options.getDirectory(fileInfo, this.formFields, handler.req);
 
     // make safe directory, disable all '.'
     folder.replace(/\./g, '');
@@ -400,10 +405,10 @@ UploadHandler.prototype.post = function () {
     // check if directory exists, if not, create all the directories
     var subFolders = folder.split('/');
     var currentFolder = options.uploadDir;
-    for (var i = 0; i < subFolders.length; i++) {
+    for(var i = 0; i < subFolders.length; i++) {
       currentFolder += '/' + subFolders[i];
 
-      if (!fs.existsSync(currentFolder)) {
+      if(!fs.existsSync(currentFolder)) {
         fs.mkdirSync(currentFolder);
       }
     }
@@ -420,29 +425,27 @@ UploadHandler.prototype.post = function () {
 
     // Move the file to the final destination
     var destinationFile = currentFolder + "/" + newFileName;
-    try
-    {
-     	// Try moving through renameSync
-       	fs.renameSync(file.path, destinationFile)
+    try {
+      // Try moving through renameSync
+      fs.renameSync(file.path, destinationFile)
     }
-    catch(exception)
-    {
-    	// if moving failed, try a copy + delete instead, this to support moving work between partitions
-    	var is = fs.createReadStream(file.path);
-		var os = fs.createWriteStream(destinationFile);
-		is.pipe(os);
-		is.on('end',function() {
-    		fs.unlinkSync(file.path);
-		});
+    catch(exception) {
+      // if moving failed, try a copy + delete instead, this to support moving work between partitions
+      var is = fs.createReadStream(file.path);
+      var os = fs.createWriteStream(destinationFile);
+      is.pipe(os);
+      is.on('end', function() {
+        fs.unlinkSync(file.path);
+      });
     }
 
-    if (options.imageTypes.test(fileInfo.name)) {
-      Object.keys(options.imageVersions).forEach(function (version) {
+    if(options.imageTypes.test(fileInfo.name)) {
+      Object.keys(options.imageVersions).forEach(function(version) {
         counter += 1;
         var opts = options.imageVersions[version];
 
         // check if version directory exists
-        if (!fs.existsSync(currentFolder + '/' + version)) {
+        if(!fs.existsSync(currentFolder + '/' + version)) {
           fs.mkdirSync(currentFolder + '/' + version);
         }
 
@@ -451,11 +454,11 @@ UploadHandler.prototype.post = function () {
           dstPath: currentFolder + '/' + version + '/' + newFileName
         };
 
-        if (opts.width) {
+        if(opts.width) {
           ioptions.width = opts.width;
         }
 
-        if (opts.height) {
+        if(opts.height) {
           ioptions.height = opts.height;
         }
 
@@ -465,32 +468,32 @@ UploadHandler.prototype.post = function () {
 
     // call the feedback within its own fiber
     var formFields = this.formFields;
-    Fiber(function () {
-      options.finished(fileInfo, formFields);
+    Fiber(function() {
+      options.finished(fileInfo, formFields, handler.req);
     }).run();
 
-  }).on('aborted', function () {
-    tmpFiles.forEach(function (file) {
+  }).on('aborted', function() {
+    tmpFiles.forEach(function(file) {
       fs.unlink(file);
     });
-  }).on('error', function (e) {
+  }).on('error', function(e) {
     console.log('ERROR');
     console.log(e);
-  }).on('progress', function (bytesReceived, bytesExpected) {
-    if (bytesReceived > options.maxPostSize) {
+  }).on('progress', function(bytesReceived, bytesExpected) {
+    if(bytesReceived > options.maxPostSize) {
       handler.req.connection.destroy();
     }
   }).on('end', finish).parse(handler.req);
 };
 
-UploadHandler.prototype.destroy = function () {
+UploadHandler.prototype.destroy = function() {
   var handler = this,
     fileName;
-  if (handler.req.url.slice(0, options.uploadUrl.length) === options.uploadUrl) {
+  if(handler.req.url.slice(0, options.uploadUrl.length) === options.uploadUrl) {
     fileName = path.basename(decodeURIComponent(handler.req.url));
-    if (fileName[0] !== '.') {
-      fs.unlink(options.uploadDir + '/' + fileName, function (ex) {
-        Object.keys(options.imageVersions).forEach(function (version) {
+    if(fileName[0] !== '.') {
+      fs.unlink(options.uploadDir + '/' + fileName, function(ex) {
+        Object.keys(options.imageVersions).forEach(function(version) {
           fs.unlink(options.uploadDir + '/' + version + '/' + fileName);
         });
         handler.callback({success: !ex});
@@ -503,27 +506,27 @@ UploadHandler.prototype.destroy = function () {
 
 // create directories
 
-var checkCreateDirectory = function (dir) {
-  if (!dir) {
+var checkCreateDirectory = function(dir) {
+  if(!dir) {
     return;
   }
 
   // If we're on Windows we'll remove the drive letter
   if(/^win/.test(process.platform)) {
-  	dir = dir.replace(/([A-Z]:[\\\/]).*?/gi, '')
+    dir = dir.replace(/([A-Z]:[\\\/]).*?/gi, '')
   }
 
   var dirParts = dir.split('/');
   var currentDir = '/';
 
-  for (var i = 0; i < dirParts.length; i++) {
-    if (!dirParts[i]) {
+  for(var i = 0; i < dirParts.length; i++) {
+    if(!dirParts[i]) {
       continue;
     }
 
     currentDir += dirParts[i] + '/';
 
-    if (!fs.existsSync(currentDir)) {
+    if(!fs.existsSync(currentDir)) {
       fs.mkdirSync(currentDir);
       console.log('Created directory: ' + currentDir);
     }
@@ -531,14 +534,14 @@ var checkCreateDirectory = function (dir) {
 }
 
 var getSafeName = function(directory, fileName) {
-	var n = fileName;
-	// Prevent directory traversal and creating hidden system files:
-	n = path.basename(n).replace(/^\.+/, '');
-	// Prevent overwriting existing files:
-	if (!options.overwrite) {
-  	while (_existsSync(directory + '/' + n)) {
-  		n = n.replace(nameCountRegexp, nameCountFunc);
-  	}
+  var n = fileName;
+  // Prevent directory traversal and creating hidden system files:
+  n = path.basename(n).replace(/^\.+/, '');
+  // Prevent overwriting existing files:
+  if(!options.overwrite) {
+    while(_existsSync(directory + '/' + n)) {
+      n = n.replace(nameCountRegexp, nameCountFunc);
+    }
   }
-	return n;
+  return n;
 }
